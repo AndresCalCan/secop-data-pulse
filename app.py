@@ -53,9 +53,8 @@ def load_and_sync_data(departamento: str, modalidad: str, limit: int):
 
 
 # Sidebar Filters
-st.sidebar.image("https://www.colombiacompra.gov.co/sites/default/files/logo_cce.png", width=220)
-st.sidebar.title("Filtros de Análisis")
-st.sidebar.markdown("Exploración en tiempo real de la base de **Datos Abiertos Colombia (SECOP II)**.")
+st.sidebar.markdown("## 🇨🇴 SECOP II Analytics")
+st.sidebar.caption("Monitor en tiempo real de la base de **Datos Abiertos Colombia**.")
 
 departamentos_comunes = [
     "Todos", "BOGOTÁ D.C.", "ANTIOQUIA", "VALLE DEL CAUCA", 
@@ -73,16 +72,19 @@ limit_records = st.sidebar.slider("Registros a consultar de la API", min_value=2
 
 if st.sidebar.button("🔄 Actualizar Datos desde SECOP II", use_container_width=True):
     st.cache_data.clear()
+    load_and_sync_data(sel_depto, sel_modalidad, limit_records)
 
-# Initialize data if not yet loaded
+# Initialize data and ensure database connection is fresh
 conn = get_connection(DB_PATH)
 try:
     kpi_data = get_kpi_summary(conn)
     if kpi_data["total_contratos"] == 0:
         load_and_sync_data(sel_depto, sel_modalidad, limit_records)
+        conn = get_connection(DB_PATH)
         kpi_data = get_kpi_summary(conn)
 except Exception:
     load_and_sync_data(sel_depto, sel_modalidad, limit_records)
+    conn = get_connection(DB_PATH)
     kpi_data = get_kpi_summary(conn)
 
 # Main Header

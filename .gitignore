@@ -12,9 +12,7 @@ ENV/
 # Streamlit
 .streamlit/secrets.toml
 
-# Data and SQLite
-data/*.db
-data/*.sqlite
+# Data cache (ignore CSVs/large dumps, track seed db)
 data/*.csv
 data/*.json
 
