@@ -1,76 +1,89 @@
 # 🇨🇴 SECOP II Data Pulse: Monitor Analítico de Contratación Pública en Colombia
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.40%2B-FF4B4B.svg)](https://streamlit.io/)
-[![SQLite](https://img.shields.io/badge/Database-SQLite-003B57.svg)](https://www.sqlite.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Live App](https://img.shields.io/badge/Demo%20en%20Vivo-Streamlit%20Cloud-FF4B4B?logo=streamlit&logoColor=white)](https://secop-data-pulse.streamlit.app)
+[![CI - Tests](https://github.com/AndresCalCan/secop-data-pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/AndresCalCan/secop-data-pulse/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 
-> Pipeline automatizado de extracción (ETL), procesamiento y visualización analítica de contratos del Estado colombiano en tiempo real, consumiendo la API abierta del **SECOP II** de [Datos Abiertos Colombia](https://www.datos.gov.co/).
+> **Demo en vivo (sin instalar nada):** 👉 **[https://secop-data-pulse.streamlit.app](https://secop-data-pulse.streamlit.app)**
 
----
-
-## 📌 Contexto del Problema
-La contratación pública en Colombia a través de SECOP II genera millones de registros anuales con presupuestos multimillonarios. Analizar de forma ágil qué entidades gastan más, cuáles son los contratistas con mayor concentración de recursos y qué modalidades predominan representa un reto fundamental tanto para la auditoría, la transparencia y la inteligencia de negocios en el sector público y privado.
-
-Este proyecto implementa una solución completa de ingeniería de datos y desarrollo backend:
-1. Conexión y consulta a la **SODA REST API** de Datos Abiertos.
-2. Limpieza, transformación y estructuración mediante **Pandas**.
-3. Almacenamiento y consultas analíticas de alto rendimiento mediante **SQL relacional (SQLite)** con soporte para **CTEs y Window Functions**.
-4. Interfaz web reactiva y gráficos interactivos con **Streamlit y Plotly**.
+Pipeline ETL y aplicación analítica en Python que consulta, limpia y analiza contratos públicos del Estado colombiano en tiempo real desde la API abierta del **SECOP II** ([Datos Abiertos Colombia](https://www.datos.gov.co/)).
 
 ---
 
-## 🏗️ Arquitectura de la Solución
+## 📌 Qué resuelve este proyecto
+La contratación pública en SECOP II genera miles de registros diarios con montos millonarios y datos crudos difíciles de consultar manualmente. Esta herramienta automatiza el flujo completo desde la extracción hasta la visualización:
+
+1. **Extracción (REST API):** Consulta el endpoint SODA de `datos.gov.co` con filtros dinámicos (`$where`, `$order`, `$limit`).
+2. **Transformación (Pandas):** Normaliza textos, convierte fechas, controla valores numéricos inválidos y limpia registros nulos.
+3. **Carga y Analítica SQL (SQLite):** Persiste los contratos limpios y ejecuta consultas analíticas con **CTEs (`WITH`)** y **Window Functions (`DENSE_RANK() OVER`)**.
+4. **Visualización y Despliegue:** Dashboard interactivo con **Streamlit + Plotly**, desplegado en Streamlit Community Cloud con pruebas unitarias automatizadas en GitHub Actions.
+
+---
+
+## 🏗️ Arquitectura
 
 ```mermaid
 flowchart LR
-    A["API SECOP II (datos.gov.co)"] -->|Extracción REST / JSON| B["ETL Pipeline (src/etl.py)"]
-    B -->|Limpieza y normalización| C["Base de Datos SQLite (data/secop.db)"]
-    C -->|Consultas SQL avanzadas (CTEs & Window Functions)| D["Módulo Analítico (src/database.py)"]
-    D -->|DataFrames procesados| E["Dashboard Web (Streamlit & Plotly)"]
+    A["API SECOP II (datos.gov.co)"] -->|REST / JSON| B["ETL Pipeline (src/etl.py)"]
+    B -->|Limpieza Pandas| C["SQLite (data/secop_contracts.db)"]
+    C -->|CTEs & Window Functions| D["Consultas SQL (src/database.py)"]
+    D -->|Métricas y Rankings| E["Dashboard (app.py / Streamlit Cloud)"]
 ```
 
 ---
 
-## 🛠️ Stack Tecnológico
-* **Lenguaje:** Python 3.14
-* **Extracción y ETL:** `requests`, `pandas`
-* **Base de Datos & SQL:** `sqlite3` (Consultas con `WITH`, `DENSE_RANK() OVER`, `GROUP BY`)
-* **Visualización:** `streamlit`, `plotly`
-* **Control de Versiones:** Git & GitHub
+## 📂 Estructura del Repositorio
+
+```text
+secop-data-pulse/
+├── .github/workflows/
+│   └── ci.yml               # Integración continua (pruebas automáticas en cada push)
+├── data/
+│   └── secop_contracts.db   # Base SQLite precargada para arranque rápido
+├── src/
+│   ├── etl.py               # Extracción SODA API, limpieza con Pandas y carga a SQLite
+│   └── database.py          # Consultas SQL analíticas (KPIs, rankings, agregaciones)
+├── tests/
+│   └── test_pipeline.py     # Pruebas unitarias de transformación ETL y consultas SQL
+├── app.py                   # Aplicación web interactiva en Streamlit
+├── run_pipeline.py          # Script CLI para ejecutar el ETL desde consola
+└── requirements.txt         # Dependencias del proyecto
+```
 
 ---
 
-## 🚀 Instalación y Ejecución Local
+## 🚀 Instalación y Uso Local
 
-### 1. Clonar el repositorio
+### 1. Clonar el repositorio e instalar dependencias
 ```bash
 git clone https://github.com/AndresCalCan/secop-data-pulse.git
 cd secop-data-pulse
-```
-
-### 2. Crear entorno virtual e instalar dependencias
-```bash
 python -m venv venv
-# En Windows:
-venv\Scripts\activate
-# En Linux/macOS:
-source venv/bin/activate
-
+venv\Scripts\activate   # En Linux/macOS: source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Ejecutar la aplicación
+### 2. Ejecutar el pipeline ETL desde consola (CLI)
+```bash
+python run_pipeline.py --limit 500 --departamento "ANTIOQUIA"
+```
+
+### 3. Lanzar el dashboard web
 ```bash
 streamlit run app.py
 ```
-La aplicación se abrirá automáticamente en tu navegador en `http://localhost:8501`.
+
+### 4. Correr las pruebas unitarias
+```bash
+python -m unittest discover -s tests -v
+```
 
 ---
 
-## 🧠 Consultas SQL Implementadas (Destacadas)
+## 🧠 Ejemplo de Consulta SQL Implementada
 
-Para evitar sobrecargar la memoria en el cliente web, los análisis de concentración de contratos se realizan directamente en el motor relacional utilizando **Window Functions**:
+Los rankings de contratistas se calculan directamente en el motor SQL con CTEs y funciones de ventana (`DENSE_RANK`):
 
 ```sql
 WITH ContratistasTotal AS (
@@ -98,6 +111,5 @@ LIMIT 10;
 
 ## 👨‍💻 Autor
 **Andrés Felipe Calderón Cantillo**  
-*Estudiante de Ingeniería de Sistemas — Universidad Libre (Bogotá, Colombia)*  
-* Enfoque: Backend, Ingeniería de Datos y Analítica.  
-* GitHub: [@AndresCalCan](https://github.com/AndresCalCan)
+Estudiante de Ingeniería de Sistemas — Universidad Libre (Bogotá, Colombia)  
+GitHub: [@AndresCalCan](https://github.com/AndresCalCan)

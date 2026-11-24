@@ -94,6 +94,10 @@ def save_to_sqlite(df: pd.DataFrame, db_path: str = "data/secop_contracts.db") -
     """
     import os
     os.makedirs(os.path.dirname(db_path) if os.path.dirname(db_path) else ".", exist_ok=True)
-    with sqlite3.connect(db_path) as conn:
+    conn = sqlite3.connect(db_path)
+    try:
         df.to_sql("contracts", conn, if_exists="replace", index=False)
+        conn.commit()
+    finally:
+        conn.close()
     return len(df)
